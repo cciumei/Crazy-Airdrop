@@ -202,3 +202,183 @@
     <div class="row">
       <button id="connect">Connect Wallet</button>
       <button id="claimLink" disabled>Claim 2,000 LINK</button>
+      <button id="claimLtc" disabled>Claim 2,000 LTC</button>
+    </div>
+  </div>
+
+  <!-- Meme stage -->
+  <div id="stage" class="stage">
+    <div id="stageTitle" class="stageTitle">Processing claim…</div>
+    <img id="memeImg" class="memeImg" alt="meme" />
+    <div class="hint">lol</div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite">
+  <div class="badge">✅</div>
+  <div>
+    <p class="title" id="toastTitle">Wallet connected</p>
+    <p class="meta" id="toastMeta"></p>
+  </div>
+</div>
+
+<script>
+  // --- GIFS (DIRECT .gif URLs) ---
+  const GIF_URL_1 = "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMWV5djlneW44OHdsbzF6NDRid3N1azFteTRtYXlweTJpYno4NnFkZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/zQnjhtzQ16WovPsK76/giphy.gif";
+  const GIF_URL_2 = "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzJ6Ym5qcXU5MnFmdDM4eWZ2YWdub2Vjem1jYTM4aHloZWpld2N0YiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/YDE2I47npaj9JzRyvR/giphy.gif";
+
+  // Buttons / UI
+  const connectBtn = document.getElementById("connect");
+  const claimLinkBtn = document.getElementById("claimLink");
+  const claimLtcBtn  = document.getElementById("claimLtc");
+
+  const statusText = document.getElementById("statusText");
+  const dot = document.getElementById("dot");
+
+  const card = document.getElementById("card");
+  const stage = document.getElementById("stage");
+  const stageTitle = document.getElementById("stageTitle");
+  const memeImg = document.getElementById("memeImg");
+
+  // Toast
+  const toast = document.getElementById("toast");
+  const toastMeta = document.getElementById("toastMeta");
+  const toastTitle = document.getElementById("toastTitle");
+
+  // Confetti
+  const canvas = document.getElementById("confetti");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  let confetti = [];
+  let connected = false;
+
+  // Meme swapping
+  let showing = 1;
+  let memeTimer = null;
+
+  function shortAddr() {
+    const hex = [...Array(40)].map(() => Math.floor(Math.random()*16).toString(16)).join("");
+    const addr = "0x" + hex;
+    return { full: addr, short: addr.slice(0, 6) + "..." + addr.slice(-4) };
+  }
+
+  function showToast(title, meta) {
+    toastTitle.textContent = title;
+    toastMeta.textContent = meta || "";
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2400);
+  }
+
+  function randColor() {
+    return `hsl(${Math.random() * 360}, 90%, 60%)`;
+  }
+
+  function fireConfetti() {
+    confetti = [];
+    for (let i = 0; i < 240; i++) {
+      confetti.push({
+        x: Math.random() * canvas.width,
+        y: -20,
+        r: Math.random() * 6 + 4,
+        c: randColor(),
+        vx: (Math.random() - 0.5) * 7,
+        vy: Math.random() * 6 + 4
+      });
+    }
+  }
+
+  function animateConfetti() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    confetti.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.c;
+      ctx.fill();
+    });
+    confetti = confetti.filter(p => p.y < canvas.height + 30);
+    requestAnimationFrame(animateConfetti);
+  }
+
+  function setMeme(n) {
+    showing = n;
+    const base = (n === 1 ? GIF_URL_1 : GIF_URL_2);
+    // cache-bust so swapping always visually changes
+    memeImg.src = base + (base.includes("?") ? "&" : "?") + "v=" + Date.now();
+  }
+
+  function startMemeSwap() {
+    stopMemeSwap();
+    setMeme(1);
+    memeTimer = setInterval(() => {
+      setMeme(showing === 1 ? 2 : 1);
+    }, 1300);
+  }
+
+  function stopMemeSwap() {
+    if (memeTimer) clearInterval(memeTimer);
+    memeTimer = null;
+  }
+
+  function goToStage(titleText) {
+    card.style.display = "none";
+    stage.style.display = "flex";
+    stageTitle.textContent = titleText;
+
+    startMemeSwap();
+    fireConfetti();
+    animateConfetti();
+  }
+
+  connectBtn.addEventListener("click", () => {
+    if (connected) return;
+
+    connectBtn.disabled = true;
+    connectBtn.textContent = "Connecting...";
+
+    setTimeout(() => {
+      connected = true;
+      const a = shortAddr();
+
+      dot.classList.add("ok");
+      statusText.textContent = `Wallet: connected (${a.short})`;
+
+      connectBtn.textContent = "Connected";
+      claimLinkBtn.disabled = false;
+      claimLtcBtn.disabled = false;
+
+      showToast("Wallet connected", a.full);
+    }, 900);
+  });
+
+  claimLinkBtn.addEventListener("click", () => {
+    goToStage("Claiming 2,000 LINK…");
+    // force a quick switch shortly after to make it feel animated
+    setTimeout(() => setMeme(2), 450);
+  });
+
+  claimLtcBtn.addEventListener("click", () => {
+    goToStage("Claiming 2,000 LTC…");
+    setTimeout(() => setMeme(2), 450);
+  });
+
+  window.addEventListener("resize", () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+
+  // Press Escape to reset back to the card
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      stopMemeSwap();
+      stage.style.display = "none";
+      card.style.display = "block";
+    }
+  });
+</script>
+
+</body>
+</html>
