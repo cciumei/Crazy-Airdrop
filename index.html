@@ -30,7 +30,7 @@
     background: linear-gradient(135deg, #1e1e1e, #0a0a0a);
     box-shadow: 0 0 50px rgba(0,255,200,0.35);
     position: relative;
-    min-width: min(560px, 92vw);
+    min-width: min(620px, 92vw);
   }
 
   h1 {
@@ -74,17 +74,17 @@
   .dot.ok { background: #00ffc8; box-shadow: 0 0 12px rgba(0,255,200,0.7); }
 
   button {
-    font-size: 1.1rem;
-    padding: 14px 22px;
+    font-size: 1.08rem;
+    padding: 14px 18px;
     border-radius: 14px;
     border: none;
     cursor: pointer;
     color: #000;
     background: linear-gradient(135deg, #00ffc8, #00d4ff);
-    font-weight: 800;
+    font-weight: 900;
     box-shadow: 0 0 22px rgba(0,255,200,0.55);
     transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
-    min-width: 180px;
+    min-width: 190px;
   }
   button:hover {
     transform: scale(1.05);
@@ -114,7 +114,7 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease, transform 0.2s ease;
-    max-width: min(680px, 92vw);
+    max-width: min(780px, 92vw);
   }
   .toast.show {
     opacity: 1;
@@ -142,7 +142,7 @@
     word-break: break-all;
   }
 
-  /* Meme stage */
+  /* Stage */
   .stage {
     display: none;
     flex-direction: column;
@@ -150,30 +150,24 @@
     align-items: center;
     justify-content: center;
     padding: 18px;
-    width: min(720px, 94vw);
+    width: min(760px, 94vw);
   }
 
   .stageTitle {
-    font-size: 1.4rem;
-    font-weight: 900;
-    opacity: 0.95;
+    font-size: 1.45rem;
+    font-weight: 950;
+    opacity: 0.96;
     margin-bottom: 4px;
   }
 
-  .gifWrap {
+  .memeImg {
     width: min(520px, 92vw);
-    aspect-ratio: 1 / 1;
+    max-height: 70vh;
     border-radius: 18px;
-    overflow: hidden;
     box-shadow: 0 0 34px rgba(255,255,255,0.18);
     border: 1px solid rgba(255,255,255,0.10);
     background: rgba(255,255,255,0.03);
-  }
-
-  .gifWrap iframe {
-    width: 100%;
-    height: 100%;
-    border: 0;
+    object-fit: contain;
   }
 
   .hint {
@@ -208,187 +202,3 @@
     <div class="row">
       <button id="connect">Connect Wallet</button>
       <button id="claimLink" disabled>Claim 2,000 LINK</button>
-      <button id="claimLtc" disabled>Claim 2,000 LTC</button>
-    </div>
-  </div>
-
-  <!-- Meme stage -->
-  <div id="stage" class="stage">
-    <div id="stageTitle" class="stageTitle">Processing claim…</div>
-
-    <div class="gifWrap" id="gif1Wrap">
-      <iframe id="gif1" src="https://tenor.com/embed/b18oe" allowfullscreen></iframe>
-    </div>
-
-    <div class="gifWrap" id="gif2Wrap" style="display:none;">
-      <iframe id="gif2" src="https://tenor.com/embed/qU6UmOw9LRr" allowfullscreen></iframe>
-    </div>
-
-    <div class="hint">lol</div>
-  </div>
-</div>
-
-<div id="toast" class="toast" role="status" aria-live="polite">
-  <div class="badge">✅</div>
-  <div>
-    <p class="title" id="toastTitle">Wallet connected</p>
-    <p class="meta" id="toastMeta"></p>
-  </div>
-</div>
-
-<script>
-  // Buttons / UI
-  const connectBtn = document.getElementById("connect");
-  const claimLinkBtn = document.getElementById("claimLink");
-  const claimLtcBtn  = document.getElementById("claimLtc");
-
-  const statusText = document.getElementById("statusText");
-  const dot = document.getElementById("dot");
-
-  const card = document.getElementById("card");
-  const stage = document.getElementById("stage");
-  const stageTitle = document.getElementById("stageTitle");
-
-  const gif1Wrap = document.getElementById("gif1Wrap");
-  const gif2Wrap = document.getElementById("gif2Wrap");
-
-  // Toast
-  const toast = document.getElementById("toast");
-  const toastMeta = document.getElementById("toastMeta");
-  const toastTitle = document.getElementById("toastTitle");
-
-  // Confetti
-  const canvas = document.getElementById("confetti");
-  const ctx = canvas.getContext("2d");
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  let confetti = [];
-  let connected = false;
-  let memeTimer = null;
-  let showing = 1;
-
-  function shortAddr() {
-    const hex = [...Array(40)].map(() => Math.floor(Math.random()*16).toString(16)).join("");
-    const addr = "0x" + hex;
-    return { full: addr, short: addr.slice(0, 6) + "..." + addr.slice(-4) };
-  }
-
-  function showToast(title, meta) {
-    toastTitle.textContent = title;
-    toastMeta.textContent = meta || "";
-    toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 2400);
-  }
-
-  function randColor() {
-    return `hsl(${Math.random() * 360}, 90%, 60%)`;
-  }
-
-  function fireConfetti() {
-    confetti = [];
-    for (let i = 0; i < 240; i++) {
-      confetti.push({
-        x: Math.random() * canvas.width,
-        y: -20,
-        r: Math.random() * 6 + 4,
-        c: randColor(),
-        vx: (Math.random() - 0.5) * 7,
-        vy: Math.random() * 6 + 4
-      });
-    }
-  }
-
-  function animateConfetti() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    confetti.forEach(p => {
-      p.x += p.vx;
-      p.y += p.vy;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = p.c;
-      ctx.fill();
-    });
-    confetti = confetti.filter(p => p.y < canvas.height + 30);
-    requestAnimationFrame(animateConfetti);
-  }
-
-  function showMeme(n) {
-    showing = n;
-    gif1Wrap.style.display = (n === 1) ? "block" : "none";
-    gif2Wrap.style.display = (n === 2) ? "block" : "none";
-  }
-
-  function startMemeSwap() {
-    stopMemeSwap();
-    memeTimer = setInterval(() => {
-      showMeme(showing === 1 ? 2 : 1);
-    }, 1300);
-  }
-
-  function stopMemeSwap() {
-    if (memeTimer) {
-      clearInterval(memeTimer);
-      memeTimer = null;
-    }
-  }
-
-  function goToStage(titleText) {
-    card.style.display = "none";
-    stage.style.display = "flex";
-    stageTitle.textContent = titleText;
-    showMeme(1);
-    startMemeSwap();
-    fireConfetti();
-    animateConfetti();
-  }
-
-  connectBtn.addEventListener("click", () => {
-    if (connected) return;
-
-    connectBtn.disabled = true;
-    connectBtn.textContent = "Connecting...";
-
-    setTimeout(() => {
-      connected = true;
-      const a = shortAddr();
-
-      dot.classList.add("ok");
-      statusText.textContent = `Wallet: connected (${a.short})`;
-
-      connectBtn.textContent = "Connected";
-      claimLinkBtn.disabled = false;
-      claimLtcBtn.disabled = false;
-
-      showToast("Wallet connected", a.full);
-    }, 900);
-  });
-
-  claimLinkBtn.addEventListener("click", () => {
-    goToStage("Claiming 2,000 LINK…");
-    // also force an immediate swap so it feels alive
-    setTimeout(() => showMeme(2), 400);
-  });
-
-  claimLtcBtn.addEventListener("click", () => {
-    goToStage("Claiming 2,000 LTC…");
-    setTimeout(() => showMeme(2), 400);
-  });
-
-  window.addEventListener("resize", () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  });
-
-  // Optional: if someone presses Escape, reset back to the card
-  window.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      stopMemeSwap();
-      stage.style.display = "none";
-      card.style.display = "block";
-    }
-  });
-</script>
-
-</body>
-</html>
