@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Crypto Glitch</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Crazy Airdrop</title>
 <style>
   html, body {
     margin: 0;
@@ -29,18 +30,18 @@
     background: linear-gradient(135deg, #1e1e1e, #0a0a0a);
     box-shadow: 0 0 50px rgba(0,255,200,0.35);
     position: relative;
-    min-width: min(520px, 92vw);
+    min-width: min(560px, 92vw);
   }
 
   h1 {
-    margin: 0 0 18px 0;
-    font-size: 3rem;
+    margin: 0 0 10px 0;
+    font-size: 2.8rem;
     letter-spacing: 1px;
   }
 
   .sub {
     opacity: 0.85;
-    margin-bottom: 24px;
+    margin-bottom: 18px;
     font-size: 1.05rem;
   }
 
@@ -52,26 +53,47 @@
     flex-wrap: wrap;
   }
 
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    font-size: 0.95rem;
+    opacity: 0.9;
+    user-select: none;
+  }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #888;
+  }
+  .dot.ok { background: #00ffc8; box-shadow: 0 0 12px rgba(0,255,200,0.7); }
+
   button {
-    font-size: 1.35rem;
-    padding: 16px 34px;
+    font-size: 1.1rem;
+    padding: 14px 22px;
     border-radius: 14px;
     border: none;
     cursor: pointer;
     color: #000;
     background: linear-gradient(135deg, #00ffc8, #00d4ff);
     font-weight: 800;
-    box-shadow: 0 0 25px rgba(0,255,200,0.6);
+    box-shadow: 0 0 22px rgba(0,255,200,0.55);
     transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+    min-width: 180px;
   }
   button:hover {
-    transform: scale(1.07);
-    box-shadow: 0 0 45px rgba(0,255,200,0.9);
+    transform: scale(1.05);
+    box-shadow: 0 0 38px rgba(0,255,200,0.9);
   }
   button:disabled {
     cursor: not-allowed;
     filter: grayscale(0.4) brightness(0.9);
-    box-shadow: 0 0 14px rgba(0,255,200,0.25);
+    box-shadow: 0 0 12px rgba(0,255,200,0.25);
     transform: none;
   }
 
@@ -92,8 +114,7 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease, transform 0.2s ease;
-    transform-origin: center;
-    max-width: min(560px, 92vw);
+    max-width: min(680px, 92vw);
   }
   .toast.show {
     opacity: 1;
@@ -110,7 +131,7 @@
     flex: 0 0 auto;
   }
   .toast .title {
-    font-weight: 800;
+    font-weight: 900;
     margin: 0;
     line-height: 1.1;
   }
@@ -121,37 +142,43 @@
     word-break: break-all;
   }
 
-  /* Fake status pill */
-  .pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.10);
-    font-size: 0.95rem;
-    opacity: 0.9;
-  }
-  .dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #888;
-  }
-  .dot.ok { background: #00ffc8; box-shadow: 0 0 12px rgba(0,255,200,0.7); }
-
-  /* Memes */
-  .memes {
+  /* Meme stage */
+  .stage {
     display: none;
     flex-direction: column;
-    gap: 22px;
+    gap: 14px;
     align-items: center;
+    justify-content: center;
+    padding: 18px;
+    width: min(720px, 94vw);
   }
-  .memes img {
-    max-width: 90%;
-    border-radius: 16px;
-    box-shadow: 0 0 30px rgba(255,255,255,0.3);
+
+  .stageTitle {
+    font-size: 1.4rem;
+    font-weight: 900;
+    opacity: 0.95;
+    margin-bottom: 4px;
+  }
+
+  .gifWrap {
+    width: min(520px, 92vw);
+    aspect-ratio: 1 / 1;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 0 34px rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.03);
+  }
+
+  .gifWrap iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .hint {
+    opacity: 0.75;
+    font-size: 0.95rem;
   }
 
   canvas {
@@ -166,12 +193,13 @@
 <canvas id="confetti"></canvas>
 
 <div class="center">
+  <!-- Card -->
   <div id="card" class="card">
-    <h1>2,000 LINK</h1>
-    <div class="sub">click to claim the reward</div>
+    <h1>AirDrop Glitch</h1>
+    <div class="sub">connect wallet, then claim your “reward”</div>
 
     <div class="row" style="margin-bottom: 16px;">
-      <span id="status" class="pill">
+      <span class="pill">
         <span id="dot" class="dot"></span>
         <span id="statusText">Wallet: not connected</span>
       </span>
@@ -179,13 +207,24 @@
 
     <div class="row">
       <button id="connect">Connect Wallet</button>
-      <button id="claim" disabled>20,000 LTC</button>
+      <button id="claimLink" disabled>Claim 2,000 LINK</button>
+      <button id="claimLtc" disabled>Claim 2,000 LTC</button>
     </div>
   </div>
 
-  <div id="memes" class="memes">
-    <img src="https://tenor.com/b18oe.gif" alt="meme 1">
-    <img src="https://tenor.com/qU6UmOw9LRr.gif" alt="meme 2">
+  <!-- Meme stage -->
+  <div id="stage" class="stage">
+    <div id="stageTitle" class="stageTitle">Processing claim…</div>
+
+    <div class="gifWrap" id="gif1Wrap">
+      <iframe id="gif1" src="https://tenor.com/embed/b18oe" allowfullscreen></iframe>
+    </div>
+
+    <div class="gifWrap" id="gif2Wrap" style="display:none;">
+      <iframe id="gif2" src="https://tenor.com/embed/qU6UmOw9LRr" allowfullscreen></iframe>
+    </div>
+
+    <div class="hint">lol</div>
   </div>
 </div>
 
@@ -198,17 +237,27 @@
 </div>
 
 <script>
+  // Buttons / UI
   const connectBtn = document.getElementById("connect");
-  const claimBtn = document.getElementById("claim");
+  const claimLinkBtn = document.getElementById("claimLink");
+  const claimLtcBtn  = document.getElementById("claimLtc");
+
   const statusText = document.getElementById("statusText");
   const dot = document.getElementById("dot");
 
   const card = document.getElementById("card");
-  const memes = document.getElementById("memes");
+  const stage = document.getElementById("stage");
+  const stageTitle = document.getElementById("stageTitle");
 
+  const gif1Wrap = document.getElementById("gif1Wrap");
+  const gif2Wrap = document.getElementById("gif2Wrap");
+
+  // Toast
   const toast = document.getElementById("toast");
   const toastMeta = document.getElementById("toastMeta");
+  const toastTitle = document.getElementById("toastTitle");
 
+  // Confetti
   const canvas = document.getElementById("confetti");
   const ctx = canvas.getContext("2d");
   canvas.width = window.innerWidth;
@@ -216,19 +265,17 @@
 
   let confetti = [];
   let connected = false;
+  let memeTimer = null;
+  let showing = 1;
 
   function shortAddr() {
-    // Fake wallet address
     const hex = [...Array(40)].map(() => Math.floor(Math.random()*16).toString(16)).join("");
     const addr = "0x" + hex;
-    return {
-      full: addr,
-      short: addr.slice(0, 6) + "..." + addr.slice(-4)
-    };
+    return { full: addr, short: addr.slice(0, 6) + "..." + addr.slice(-4) };
   }
 
   function showToast(title, meta) {
-    document.getElementById("toastTitle").textContent = title;
+    toastTitle.textContent = title;
     toastMeta.textContent = meta || "";
     toast.classList.add("show");
     setTimeout(() => toast.classList.remove("show"), 2400);
@@ -240,7 +287,7 @@
 
   function fireConfetti() {
     confetti = [];
-    for (let i = 0; i < 220; i++) {
+    for (let i = 0; i < 240; i++) {
       confetti.push({
         x: Math.random() * canvas.width,
         y: -20,
@@ -266,13 +313,42 @@
     requestAnimationFrame(animateConfetti);
   }
 
+  function showMeme(n) {
+    showing = n;
+    gif1Wrap.style.display = (n === 1) ? "block" : "none";
+    gif2Wrap.style.display = (n === 2) ? "block" : "none";
+  }
+
+  function startMemeSwap() {
+    stopMemeSwap();
+    memeTimer = setInterval(() => {
+      showMeme(showing === 1 ? 2 : 1);
+    }, 1300);
+  }
+
+  function stopMemeSwap() {
+    if (memeTimer) {
+      clearInterval(memeTimer);
+      memeTimer = null;
+    }
+  }
+
+  function goToStage(titleText) {
+    card.style.display = "none";
+    stage.style.display = "flex";
+    stageTitle.textContent = titleText;
+    showMeme(1);
+    startMemeSwap();
+    fireConfetti();
+    animateConfetti();
+  }
+
   connectBtn.addEventListener("click", () => {
     if (connected) return;
 
     connectBtn.disabled = true;
     connectBtn.textContent = "Connecting...";
 
-    // Fake connection delay
     setTimeout(() => {
       connected = true;
       const a = shortAddr();
@@ -281,22 +357,36 @@
       statusText.textContent = `Wallet: connected (${a.short})`;
 
       connectBtn.textContent = "Connected";
-      claimBtn.disabled = false;
+      claimLinkBtn.disabled = false;
+      claimLtcBtn.disabled = false;
 
       showToast("Wallet connected", a.full);
     }, 900);
   });
 
-  claimBtn.addEventListener("click", () => {
-    card.style.display = "none";
-    memes.style.display = "flex";
-    fireConfetti();
-    animateConfetti();
+  claimLinkBtn.addEventListener("click", () => {
+    goToStage("Claiming 2,000 LINK…");
+    // also force an immediate swap so it feels alive
+    setTimeout(() => showMeme(2), 400);
+  });
+
+  claimLtcBtn.addEventListener("click", () => {
+    goToStage("Claiming 2,000 LTC…");
+    setTimeout(() => showMeme(2), 400);
   });
 
   window.addEventListener("resize", () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+  });
+
+  // Optional: if someone presses Escape, reset back to the card
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      stopMemeSwap();
+      stage.style.display = "none";
+      card.style.display = "block";
+    }
   });
 </script>
 
