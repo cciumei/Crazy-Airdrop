@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Crypto Glitch</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: radial-gradient(circle at top, #111 0%, #000 65%);
+    color: #fff;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden;
+  }
+
+  .center {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 16px;
+  }
+
+  .card {
+    padding: 52px 62px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #1e1e1e, #0a0a0a);
+    box-shadow: 0 0 50px rgba(0,255,200,0.35);
+    position: relative;
+    min-width: min(520px, 92vw);
+  }
+
+  h1 {
+    margin: 0 0 18px 0;
+    font-size: 3rem;
+    letter-spacing: 1px;
+  }
+
+  .sub {
+    opacity: 0.85;
+    margin-bottom: 24px;
+    font-size: 1.05rem;
+  }
+
+  .row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  button {
+    font-size: 1.35rem;
+    padding: 16px 34px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    color: #000;
+    background: linear-gradient(135deg, #00ffc8, #00d4ff);
+    font-weight: 800;
+    box-shadow: 0 0 25px rgba(0,255,200,0.6);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  }
+  button:hover {
+    transform: scale(1.07);
+    box-shadow: 0 0 45px rgba(0,255,200,0.9);
+  }
+  button:disabled {
+    cursor: not-allowed;
+    filter: grayscale(0.4) brightness(0.9);
+    box-shadow: 0 0 14px rgba(0,255,200,0.25);
+    transform: none;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 26px;
+    transform: translateX(-50%);
+    background: rgba(20, 20, 20, 0.9);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    padding: 14px 16px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    transform-origin: center;
+    max-width: min(560px, 92vw);
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-6px);
+  }
+  .badge {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    background: rgba(0,255,200,0.15);
+    border: 1px solid rgba(0,255,200,0.35);
+    flex: 0 0 auto;
+  }
+  .toast .title {
+    font-weight: 800;
+    margin: 0;
+    line-height: 1.1;
+  }
+  .toast .meta {
+    margin: 2px 0 0 0;
+    opacity: 0.8;
+    font-size: 0.92rem;
+    word-break: break-all;
+  }
+
+  /* Fake status pill */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    font-size: 0.95rem;
+    opacity: 0.9;
+  }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #888;
+  }
+  .dot.ok { background: #00ffc8; box-shadow: 0 0 12px rgba(0,255,200,0.7); }
+
+  /* Memes */
+  .memes {
+    display: none;
+    flex-direction: column;
+    gap: 22px;
+    align-items: center;
+  }
+  .memes img {
+    max-width: 90%;
+    border-radius: 16px;
+    box-shadow: 0 0 30px rgba(255,255,255,0.3);
+  }
+
+  canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confetti"></canvas>
+
+<div class="center">
+  <div id="card" class="card">
+    <h1>2,000 LINK</h1>
+    <div class="sub">click to claim the reward</div>
+
+    <div class="row" style="margin-bottom: 16px;">
+      <span id="status" class="pill">
+        <span id="dot" class="dot"></span>
+        <span id="statusText">Wallet: not connected</span>
+      </span>
+    </div>
+
+    <div class="row">
+      <button id="connect">Connect Wallet</button>
+      <button id="claim" disabled>20,000 LTC</button>
+    </div>
+  </div>
+
+  <div id="memes" class="memes">
+    <img src="https://tenor.com/b18oe.gif" alt="meme 1">
+    <img src="https://tenor.com/qU6UmOw9LRr.gif" alt="meme 2">
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite">
+  <div class="badge">✅</div>
+  <div>
+    <p class="title" id="toastTitle">Wallet connected</p>
+    <p class="meta" id="toastMeta"></p>
+  </div>
+</div>
+
+<script>
+  const connectBtn = document.getElementById("connect");
+  const claimBtn = document.getElementById("claim");
+  const statusText = document.getElementById("statusText");
+  const dot = document.getElementById("dot");
+
+  const card = document.getElementById("card");
+  const memes = document.getElementById("memes");
+
+  const toast = document.getElementById("toast");
+  const toastMeta = document.getElementById("toastMeta");
+
+  const canvas = document.getElementById("confetti");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  let confetti = [];
+  let connected = false;
+
+  function shortAddr() {
+    // Fake wallet address
+    const hex = [...Array(40)].map(() => Math.floor(Math.random()*16).toString(16)).join("");
+    const addr = "0x" + hex;
+    return {
+      full: addr,
+      short: addr.slice(0, 6) + "..." + addr.slice(-4)
+    };
+  }
+
+  function showToast(title, meta) {
+    document.getElementById("toastTitle").textContent = title;
+    toastMeta.textContent = meta || "";
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2400);
+  }
+
+  function randColor() {
+    return `hsl(${Math.random() * 360}, 90%, 60%)`;
+  }
+
+  function fireConfetti() {
+    confetti = [];
+    for (let i = 0; i < 220; i++) {
+      confetti.push({
+        x: Math.random() * canvas.width,
+        y: -20,
+        r: Math.random() * 6 + 4,
+        c: randColor(),
+        vx: (Math.random() - 0.5) * 7,
+        vy: Math.random() * 6 + 4
+      });
+    }
+  }
+
+  function animateConfetti() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    confetti.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.c;
+      ctx.fill();
+    });
+    confetti = confetti.filter(p => p.y < canvas.height + 30);
+    requestAnimationFrame(animateConfetti);
+  }
+
+  connectBtn.addEventListener("click", () => {
+    if (connected) return;
+
+    connectBtn.disabled = true;
+    connectBtn.textContent = "Connecting...";
+
+    // Fake connection delay
+    setTimeout(() => {
+      connected = true;
+      const a = shortAddr();
+
+      dot.classList.add("ok");
+      statusText.textContent = `Wallet: connected (${a.short})`;
+
+      connectBtn.textContent = "Connected";
+      claimBtn.disabled = false;
+
+      showToast("Wallet connected", a.full);
+    }, 900);
+  });
+
+  claimBtn.addEventListener("click", () => {
+    card.style.display = "none";
+    memes.style.display = "flex";
+    fireConfetti();
+    animateConfetti();
+  });
+
+  window.addEventListener("resize", () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+</script>
+
+</body>
+</html>
